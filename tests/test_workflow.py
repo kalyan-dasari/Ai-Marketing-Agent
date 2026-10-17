@@ -145,7 +145,7 @@ StudEarn connects students on campus.
         camp = self.client.post('/api/v1/campaigns', json={'project_id': proj['id']}).json
 
         # Check auto-seeded targets
-        res_targets = self.client.get(f"/api/v1/distribution/targets?campaign_id={camp['campaign']['id']}")
+        res_targets = self.client.get(f"/api/v1/distribution/targets?campaign_id={camp['id']}")
         self.assertEqual(res_targets.status_code, 200)
         targets = res_targets.json
         self.assertTrue(len(targets) >= 1)
