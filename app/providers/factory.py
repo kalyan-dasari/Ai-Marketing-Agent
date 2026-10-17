@@ -10,6 +10,15 @@ from ..db import get_db
 def get_ai_provider() -> BaseAIProvider:
     """Returns configured AI provider based on settings or environment."""
     try:
+        if current_app and current_app.config.get('TESTING'):
+            db = get_db()
+            row = db.execute("SELECT value FROM settings WHERE key='ai_provider'").fetchone()
+            if not row or row[0] == 'mock':
+                return MockProvider()
+    except Exception:
+        pass
+
+    try:
         db = get_db()
         rows = db.execute("SELECT key, value FROM settings WHERE key IN ('ai_provider', 'ollama_url', 'ollama_model', 'groq_api_key', 'groq_model')").fetchall()
         settings = {r['key']: r['value'] for r in rows}
