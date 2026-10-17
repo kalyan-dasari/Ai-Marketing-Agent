@@ -180,6 +180,14 @@ def _run_migrations(db):
         db.execute('ALTER TABLE post_metrics ADD COLUMN notes TEXT')
 
     # distribution_targets migrations
+    if not column_exists('distribution_targets', 'rules_summary'):
+        db.execute('ALTER TABLE distribution_targets ADD COLUMN rules_summary TEXT')
+    if not column_exists('distribution_targets', 'status'):
+        db.execute('ALTER TABLE distribution_targets ADD COLUMN status TEXT NOT NULL DEFAULT "pending"')
+    if not column_exists('distribution_targets', 'shared_at'):
+        db.execute('ALTER TABLE distribution_targets ADD COLUMN shared_at TEXT')
+    if not column_exists('distribution_targets', 'live_url'):
+        db.execute('ALTER TABLE distribution_targets ADD COLUMN live_url TEXT')
     if not column_exists('distribution_targets', 'created_at'):
         db.execute('ALTER TABLE distribution_targets ADD COLUMN created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP')
 
