@@ -192,14 +192,24 @@ def _run_migrations(db):
         db.execute('ALTER TABLE distribution_targets ADD COLUMN created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP')
 
     # Ensure default settings exist
+    default_provider = 'groq' if os.environ.get('GROQ_API_KEY') else 'mock'
     default_settings = [
-        ('ai_provider', 'mock'),
+        ('ai_provider', default_provider),
         ('ollama_url', 'http://127.0.0.1:11434'),
         ('ollama_model', 'llama3'),
+        ('groq_api_key', os.environ.get('GROQ_API_KEY', '')),
+        ('groq_model', os.environ.get('GROQ_MODEL', 'openai/gpt-oss-120b')),
         ('default_tone', 'Personal and useful')
     ]
     for key, val in default_settings:
         db.execute('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', (key, val))
+
+    # If groq key is newly supplied in env, activate groq provider if still mock
+    if os.environ.get('GROQ_API_KEY'):
+        curr_provider = db.execute("SELECT value FROM settings WHERE key='ai_provider'").fetchone()
+        if curr_provider and curr_provider[0] == 'mock':
+            db.execute("UPDATE settings SET value='groq' WHERE key='ai_provider'")
+        db.execute("UPDATE settings SET value=? WHERE key='groq_api_key' AND (value='' OR value IS NULL)", (os.environ['GROQ_API_KEY'],))
 
     db.commit()
 
