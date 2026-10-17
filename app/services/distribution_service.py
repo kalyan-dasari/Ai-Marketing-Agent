@@ -38,7 +38,7 @@ class DistributionService:
     @staticmethod
     def mark_shared(target_id: int, live_url: str = '', notes: str = '') -> Dict[str, Any]:
         db = get_db()
-        now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         db.execute("""
             UPDATE distribution_targets
             SET status = 'shared', live_url = ?, notes = ?, shared_at = ?

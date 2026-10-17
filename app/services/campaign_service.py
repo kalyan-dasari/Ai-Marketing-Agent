@@ -124,7 +124,7 @@ class CampaignService:
         }
         drafts = provider.generate_campaign(dict(project), campaign_data, brief)
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         for item in drafts:
             if item['platform'] not in platforms:
                 continue
@@ -265,7 +265,7 @@ class CampaignService:
 
         # If approved or queued, ensure scheduled_posts record exists
         if new_status in {'approved', 'queued'}:
-            sched_time = asset['scheduled_for'] or datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            sched_time = asset['scheduled_for'] or datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             existing_post = db.execute("SELECT id FROM scheduled_posts WHERE asset_id = ?", (asset_id,)).fetchone()
             if not existing_post:
                 db.execute(
