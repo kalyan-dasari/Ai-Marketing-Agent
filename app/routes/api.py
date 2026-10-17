@@ -306,7 +306,7 @@ def get_settings():
 def update_settings():
     data = request.get_json(silent=True) or {}
     db = get_db()
-    for key in ['ai_provider', 'ollama_url', 'ollama_model', 'default_tone']:
+    for key in ['ai_provider', 'ollama_url', 'ollama_model', 'groq_api_key', 'groq_model', 'default_tone']:
         if key in data:
             db.execute("INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=CURRENT_TIMESTAMP", (key, str(data[key]).strip()))
     db.commit()
@@ -319,6 +319,15 @@ def test_local_llm():
     url = data.get('ollama_url') or 'http://127.0.0.1:11434'
     model = data.get('ollama_model') or 'llama3'
     provider = LocalLLMProvider(endpoint_url=url, model=model)
+    success, message = provider.test_connection()
+    return jsonify({'success': success, 'message': message}), (200 if success else 400)
+
+@api.post('/settings/test-groq')
+def test_groq():
+    data = request.get_json(silent=True) or {}
+    key = data.get('groq_api_key') or os.environ.get('GROQ_API_KEY', '')
+    model = data.get('groq_model') or os.environ.get('GROQ_MODEL', 'openai/gpt-oss-120b')
+    provider = GroqProvider(api_key=key, model=model)
     success, message = provider.test_connection()
     return jsonify({'success': success, 'message': message}), (200 if success else 400)
 

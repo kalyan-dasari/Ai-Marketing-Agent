@@ -53,8 +53,8 @@
       <div class="provider-card" onclick="navigate('settings')">
         <span class="status-dot green"></span>
         <div class="provider-info">
-          <b id="active-provider-name">{{ 'Local LLM (Ollama)' if settings.get('ai_provider') == 'local_llm' else 'Deterministic Mock AI' }}</b>
-          <small>{{ 'Offline · Zero Paid APIs' if settings.get('ai_provider') != 'local_llm' else 'Local Port 11434' }}</small>
+          <b id="active-provider-name">{{ 'Groq Cloud AI' if settings.get('ai_provider') == 'groq' else ('Local LLM (Ollama)' if settings.get('ai_provider') == 'local_llm' else 'Deterministic Mock AI') }}</b>
+          <small>{{ settings.get('groq_model', 'openai/gpt-oss-120b') if settings.get('ai_provider') == 'groq' else ('Local Port 11434' if settings.get('ai_provider') == 'local_llm' else 'Offline · Zero Paid APIs') }}</small>
         </div>
         <span class="chevron">⚙</span>
       </div>
@@ -727,20 +727,51 @@
             <form id="settings-form" class="settings-form">
               <div class="form-group">
                 <label>Active Provider</label>
-                <select name="ai_provider" id="setting-ai-provider">
-                  <option value="mock" {{ 'selected' if settings.get('ai_provider') != 'local_llm' else '' }}>Deterministic Mock Provider (Offline · ₹0 · Zero APIs)</option>
+                <select name="ai_provider" id="setting-ai-provider" onchange="toggleProviderSettings(this.value)">
+                  <option value="groq" {{ 'selected' if settings.get('ai_provider') == 'groq' else '' }}>⚡ Groq Cloud (Ultra-Fast LPUs · Free API Key)</option>
                   <option value="local_llm" {{ 'selected' if settings.get('ai_provider') == 'local_llm' else '' }}>Local LLM (Ollama / Local Server)</option>
+                  <option value="mock" {{ 'selected' if settings.get('ai_provider') == 'mock' else '' }}>Deterministic Mock Provider (Offline · ₹0 · Zero APIs)</option>
                 </select>
               </div>
 
-              <div class="form-group">
-                <label>Ollama / Local Server URL</label>
-                <input type="url" name="ollama_url" id="setting-ollama-url" value="{{ settings.get('ollama_url', 'http://127.0.0.1:11434') }}">
+              <!-- Groq Settings -->
+              <div id="settings-groq-section">
+                <div class="form-group">
+                  <label>Groq API Key</label>
+                  <input type="password" name="groq_api_key" id="setting-groq-key" value="{{ settings.get('groq_api_key', '') }}" placeholder="gsk_...">
+                </div>
+
+                <div class="form-group">
+                  <label>Groq Model</label>
+                  <select name="groq_model" id="setting-groq-model">
+                    <option value="openai/gpt-oss-120b" {{ 'selected' if settings.get('groq_model') == 'openai/gpt-oss-120b' else '' }}>openai/gpt-oss-120b (Ultra Fast & Powerful - Recommended)</option>
+                    <option value="openai/gpt-oss-20b" {{ 'selected' if settings.get('groq_model') == 'openai/gpt-oss-20b' else '' }}>openai/gpt-oss-20b (Fast & Compact)</option>
+                    <option value="qwen/qwen3.8-27b" {{ 'selected' if settings.get('groq_model') == 'qwen/qwen3.8-27b' else '' }}>qwen/qwen3.8-27b (High Capability)</option>
+                  </select>
+                </div>
+
+                <div class="form-actions" style="margin-bottom:14px;">
+                  <button type="button" class="secondary" id="test-groq-btn" onclick="testGroqConnection()">⚡ Test Groq Key</button>
+                  <span id="test-groq-result" class="test-result"></span>
+                </div>
               </div>
 
-              <div class="form-group">
-                <label>Ollama Model Name</label>
-                <input type="text" name="ollama_model" id="setting-ollama-model" value="{{ settings.get('ollama_model', 'llama3') }}" placeholder="e.g. llama3, mistral, phi3, gemma2">
+              <!-- Ollama Settings -->
+              <div id="settings-ollama-section">
+                <div class="form-group">
+                  <label>Ollama / Local Server URL</label>
+                  <input type="url" name="ollama_url" id="setting-ollama-url" value="{{ settings.get('ollama_url', 'http://127.0.0.1:11434') }}">
+                </div>
+
+                <div class="form-group">
+                  <label>Ollama Model Name</label>
+                  <input type="text" name="ollama_model" id="setting-ollama-model" value="{{ settings.get('ollama_model', 'llama3') }}" placeholder="e.g. llama3, mistral, phi3, gemma2">
+                </div>
+
+                <div class="form-actions" style="margin-bottom:14px;">
+                  <button type="button" class="secondary" id="test-llm-btn" onclick="testLocalLLMConnection()">Test Ollama Connection</button>
+                  <span id="test-llm-result" class="test-result"></span>
+                </div>
               </div>
 
               <div class="form-group">
@@ -749,10 +780,8 @@
               </div>
 
               <div class="form-actions">
-                <button type="button" class="secondary" id="test-llm-btn" onclick="testLocalLLMConnection()">Test Connection</button>
                 <button type="submit" class="primary">Save Settings</button>
               </div>
-              <div id="test-llm-result" class="test-result"></div>
             </form>
           </div>
 

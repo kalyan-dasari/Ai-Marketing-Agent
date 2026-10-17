@@ -612,6 +612,39 @@ if (settingsForm) {
   });
 }
 
+function toggleProviderSettings(val) {
+  const groqSection = $('#settings-groq-section');
+  const ollamaSection = $('#settings-ollama-section');
+  if (groqSection) groqSection.style.display = (val === 'groq') ? 'block' : 'none';
+  if (ollamaSection) ollamaSection.style.display = (val === 'local_llm') ? 'block' : 'none';
+}
+
+async function testGroqConnection() {
+  const btn = $('#test-groq-btn');
+  const resultEl = $('#test-groq-result');
+  btn.disabled = true;
+  btn.textContent = 'Testing Groq…';
+  resultEl.textContent = '';
+
+  const payload = {
+    groq_api_key: $('#setting-groq-key').value,
+    groq_model: $('#setting-groq-model').value
+  };
+
+  try {
+    const res = await api('/settings/test-groq', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    resultEl.innerHTML = `<span style="color:var(--mint); font-weight:600;">✓ ${res.message}</span>`;
+  } catch (err) {
+    resultEl.innerHTML = `<span style="color:var(--coral); font-weight:600;">✕ ${err.message}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚡ Test Groq Key';
+  }
+}
+
 async function testLocalLLMConnection() {
   const btn = $('#test-llm-btn');
   const resultEl = $('#test-llm-result');
@@ -634,7 +667,7 @@ async function testLocalLLMConnection() {
     resultEl.innerHTML = `<span style="color:var(--coral);">✕ ${err.message}</span>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Test Connection';
+    btn.textContent = 'Test Ollama Connection';
   }
 }
 
@@ -674,4 +707,6 @@ function escapeHtml(str) {
 document.addEventListener('DOMContentLoaded', () => {
   const hash = window.location.hash.replace('#', '') || 'overview';
   navigate(hash);
+  const providerSelect = $('#setting-ai-provider');
+  if (providerSelect) toggleProviderSettings(providerSelect.value);
 });
