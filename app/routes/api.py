@@ -1,4 +1,5 @@
 import json
+import os
 import logging
 from flask import Blueprint, jsonify, request
 from ..services.project_service import ProjectService
@@ -6,6 +7,7 @@ from ..services.campaign_service import CampaignService
 from ..services.distribution_service import DistributionService
 from ..services.analytics_service import AnalyticsService
 from ..providers.local_llm import LocalLLMProvider
+from ..providers.groq_provider import GroqProvider
 from ..db import get_db
 
 api = Blueprint('api', __name__)
