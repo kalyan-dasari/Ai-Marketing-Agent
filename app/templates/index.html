@@ -1,10 +1,996 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Project to Reach</title><link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}"></head><body>
-<aside class="sidebar"><a class="brand" href="/"><span class="brand-mark">↗</span><span>project<span class="brand-light">to</span>reach<small>YOUR MARKETING WORKSPACE</small></span></a><div class="side-label">WORKSPACE</div><nav><a class="nav active" href="#overview"><span>◫</span> Overview</a><a class="nav" href="#projects"><span>▤</span> Projects</a><a class="nav" href="#generator"><span>✳</span> Campaign Generator</a><a class="nav" href="#studio"><span>▧</span> Content Studio <b>{{ counts.get('needs_review',0) }}</b></a><a class="nav" href="#approvals"><span>✓</span> Approval Queue</a><a class="nav" href="#calendar"><span>▦</span> Calendar</a><a class="nav" href="#analytics"><span>⌁</span> Analytics</a></nav><div class="sidebar-bottom"><div class="provider"><span class="dot"></span><span><b>Mock AI provider</b><small>Offline · Ready to generate</small></span><span class="chevron">⌄</span></div><div class="profile"><div class="avatar">K</div><div><b>Personal workspace</b><small>Local account</small></div><span class="dots">···</span></div></div></aside>
-<main><header><div class="crumb">Workspace <span>/</span> <b>Overview</b></div><div class="header-right"><span class="local-pill"><i></i> Local workspace</span><button class="icon-btn" title="Notifications">♧</button><div class="avatar small">K</div></div></header><div class="content" id="overview"><div class="welcome"><div><div class="eyebrow"><span></span> YOUR PERSONAL MARKETING AGENT</div><h1>Turn what you build into <em>what’s next.</em></h1><p>One project can start a hundred conversations. Let’s make the first one count.</p></div><button class="primary" onclick="openModal('project-modal')">＋ &nbsp;Add a project</button></div>
-<section class="stats"><article><div class="stat-top"><span>PROJECTS</span><span class="stat-icon lilac">▤</span></div><strong>{{ projects|length }}</strong><small>Projects in your workspace</small></article><article><div class="stat-top"><span>CAMPAIGNS</span><span class="stat-icon mint">✳</span></div><strong>{{ campaigns|length }}</strong><small>Ready to reach people</small></article><article><div class="stat-top"><span>NEEDS REVIEW</span><span class="stat-icon amber">◷</span></div><strong>{{ counts.get('needs_review',0) }}</strong><small>Drafts waiting on you</small></article><article><div class="stat-top"><span>APPROVED</span><span class="stat-icon blue">✓</span></div><strong>{{ counts.get('approved',0) }}</strong><small>Ready for you to share</small></article></section>
-<section class="columns"><div class="panel" id="projects"><div class="panel-head"><div><h2>Your projects</h2><p>Give your work room to find its people.</p></div><button class="text-btn" onclick="openModal('project-modal')">＋ Add project</button></div>{% if projects %}<div class="project-list">{% for p in projects %}<div class="project-row"><div class="project-icon">{{ p.name[:1]|upper }}</div><div class="project-info"><b>{{ p.name }}</b><small>{{ p.description[:110] }}{% if p.description|length>110 %}…{% endif %}</small><div class="chips">{% if p.website_url %}<span>↗ Website</span>{% endif %}{% if p.repository_url %}<span>⌘ Repository</span>{% endif %}</div></div><button class="mini-action" title="Generate campaign" onclick="selectProject({{ p.id }},'{{ p.name|replace("'", "\\'") }}')">✳</button></div>{% endfor %}</div>{% else %}<div class="empty"><div class="empty-icon">✳</div><b>Your next project belongs here</b><span>Add a URL or a short description. We’ll turn it into a campaign you can shape and share.</span><button class="primary small-primary" onclick="openModal('project-modal')">＋ &nbsp;Add your first project</button></div>{% endif %}</div>
-<div class="panel" id="generator"><div class="panel-head"><div><h2>Make some noise</h2><p>A thoughtful campaign starts with one idea.</p></div><span class="sparkle">✳</span></div><div class="generator-card"><div class="generator-copy"><span class="tag">CAMPAIGN GENERATOR</span><h3>One project.<br>Three fresh angles.</h3><p>Get a founder story, a video concept, and a real feedback request. Written for each platform, ready for your review.</p><div class="platforms"><span>in &nbsp;LinkedIn</span><span>◎ &nbsp;Instagram</span><span>◉ &nbsp;Reddit</span></div></div><div class="orbit"><div class="orbit-inner">✳</div><span class="orbit-node n1">in</span><span class="orbit-node n2">◎</span><span class="orbit-node n3">◉</span></div><button id="generate-btn" class="primary generate-btn" onclick="openGenerator()">Create a campaign &nbsp;→</button></div></div></section>
-<section class="bottom-grid"><div class="panel" id="approvals"><div class="panel-head"><div><h2>Needs your eye</h2><p>Good work deserves a final human touch.</p></div><a href="#studio" class="text-btn">View all →</a></div><div id="asset-list">{% if assets %}{% for a in assets %}<div class="asset-row"><div class="platform-icon {{ a.platform|lower }}">{% if a.platform=='LinkedIn' %}in{% elif a.platform=='Instagram' %}◎{% else %}◉{% endif %}</div><div class="asset-copy"><span class="tag">{{ a.platform|upper }} · {{ a.format }}</span><b>{{ a.hook }}</b><small>{{ a.project_name }} · {{ a.campaign_name }}</small></div><span class="status {{ a.status }}">{{ a.status|replace('_',' ') }}</span><button class="mini-action" onclick="editAsset({{ a.id }},{{ a.hook|tojson }},{{ a.body|tojson }},'{{ a.platform }}','{{ a.status }}')">↗</button></div>{% endfor %}{% else %}<div class="empty compact"><div class="empty-icon">✎</div><b>Your drafts will land here</b><span>Generate a campaign to see your first platform-ready ideas.</span></div>{% endif %}</div></div><div class="panel calendar-panel" id="calendar"><div class="panel-head"><div><h2>Coming up</h2><p>A little consistency goes a long way.</p></div><span class="calendar-glyph">▦</span></div>{% if campaigns %}<div class="upcoming">{% for c in campaigns[:3] %}<div><span class="date-box">{{ c.created_at[:10] }}</span><span><b>{{ c.name }}</b><small>{{ c.project_name }} · {{ c.duration_days }} day plan</small></span></div>{% endfor %}</div>{% else %}<div class="empty compact"><div class="empty-icon">▦</div><b>Your calendar is a blank canvas</b><span>Start a campaign and map out your next few posts.</span></div>{% endif %}</div></section><footer>Made for the things you’re building <span>·</span> Your work stays on this device</footer></div></main>
-<div class="modal-backdrop" id="project-modal"><div class="modal"><button class="close" onclick="closeModal('project-modal')">×</button><span class="eyebrow"><span></span> NEW PROJECT</span><h2>What are you building?</h2><p>Share what you know today. You can always add more context later.</p><form id="project-form"><label>Project name<input name="name" required maxlength="120" placeholder="e.g. Focusflow"></label><label>What does it do?<textarea name="description" required maxlength="5000" rows="4" placeholder="Describe the problem and your solution in a few sentences…"></textarea></label><div class="two-inputs"><label>Website URL <small>optional</small><input name="website_url" type="url" placeholder="https://"></label><label>Repository URL <small>optional</small><input name="repository_url" type="url" placeholder="https://github.com/…"></label></div><div class="form-error" id="project-error"></div><button class="primary modal-submit">Save project</button></form></div></div>
-<div class="modal-backdrop" id="campaign-modal"><div class="modal"><button class="close" onclick="closeModal('campaign-modal')">×</button><span class="eyebrow"><span></span> CAMPAIGN SETUP</span><h2>Let’s find your people.</h2><p>Choose a direction. We’ll shape three platform-specific drafts for you to review.</p><form id="campaign-form"><label>Project<select name="project_id" id="project-choice" required>{% for p in projects %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></label><label>Campaign objective<select name="objective"><option>Get thoughtful feedback</option><option>Introduce the project</option><option>Find early users</option><option>Share what I learned</option></select></label><label>Who is this for?<input name="audience" placeholder="e.g. indie developers who…"></label><div class="two-inputs"><label>Duration<select name="duration_days"><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label><label>Tone<select name="tone"><option>Personal and useful</option><option>Warm and curious</option><option>Technical and direct</option></select></label></div><label class="check-label">Platforms</label><div class="checks"><label><input type="checkbox" name="platforms" value="LinkedIn" checked> LinkedIn</label><label><input type="checkbox" name="platforms" value="Instagram" checked> Instagram</label><label><input type="checkbox" name="platforms" value="Reddit" checked> Reddit</label></div><div class="form-error" id="campaign-error"></div><button class="primary modal-submit">Generate drafts</button></form></div></div>
-<div class="modal-backdrop" id="edit-modal"><div class="modal edit-modal"><button class="close" onclick="closeModal('edit-modal')">×</button><span class="eyebrow"><span></span> CONTENT STUDIO · <span id="edit-platform"></span></span><h2>Make it yours.</h2><form id="edit-form"><input type="hidden" name="id"><label>Hook / title<input name="hook" required maxlength="500"></label><label>Content<textarea name="body" rows="10" required maxlength="10000"></textarea></label><div id="edit-meta" class="edit-meta"></div><div class="form-error" id="edit-error"></div><div class="edit-actions"><button type="button" class="secondary" id="reject-button">Reject</button><button type="button" class="secondary" id="approve-button">Approve</button><button class="primary">Save edits</button></div></form></div></div><div id="toast" class="toast"></div><script src="{{ url_for('static',filename='app.js') }}"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project-to-Reach · AI Marketing Agent</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <a class="brand" href="#overview" onclick="navigate('overview')">
+      <span class="brand-mark">↗</span>
+      <span class="brand-text">project<span class="brand-light">to</span>reach
+        <small>AI MARKETING AGENT</small>
+      </span>
+    </a>
+
+    <div class="side-label">WORKSPACE</div>
+    <nav>
+      <a class="nav-item active" href="#overview" data-view="overview" onclick="navigate('overview'); return false;">
+        <span class="icon">◫</span> Overview
+      </a>
+      <a class="nav-item" href="#projects" data-view="projects" onclick="navigate('projects'); return false;">
+        <span class="icon">▤</span> Projects
+      </a>
+      <a class="nav-item" href="#generator" data-view="generator" onclick="navigate('generator'); return false;">
+        <span class="icon">✳</span> Campaign Generator
+      </a>
+      <a class="nav-item" href="#studio" data-view="studio" onclick="navigate('studio'); return false;">
+        <span class="icon">▧</span> Content Studio
+        <b class="badge" id="badge-studio">{{ counts.get('needs_review', 0) }}</b>
+      </a>
+      <a class="nav-item" href="#approvals" data-view="approvals" onclick="navigate('approvals'); return false;">
+        <span class="icon">✓</span> Approval Queue
+        <b class="badge amber-badge" id="badge-approvals">{{ counts.get('needs_review', 0) }}</b>
+      </a>
+      <a class="nav-item" href="#calendar" data-view="calendar" onclick="navigate('calendar'); return false;">
+        <span class="icon">▦</span> Content Calendar
+      </a>
+      <a class="nav-item" href="#distribution" data-view="distribution" onclick="navigate('distribution'); return false;">
+        <span class="icon">◎</span> Distribution Tracker
+      </a>
+      <a class="nav-item" href="#analytics" data-view="analytics" onclick="navigate('analytics'); return false;">
+        <span class="icon">⌁</span> Analytics & Reach
+      </a>
+      <a class="nav-item" href="#settings" data-view="settings" onclick="navigate('settings'); return false;">
+        <span class="icon">⚙</span> Settings & AI
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="provider-card" onclick="navigate('settings')">
+        <span class="status-dot green"></span>
+        <div class="provider-info">
+          <b id="active-provider-name">{{ 'Local LLM (Ollama)' if settings.get('ai_provider') == 'local_llm' else 'Deterministic Mock AI' }}</b>
+          <small>{{ 'Offline · Zero Paid APIs' if settings.get('ai_provider') != 'local_llm' else 'Local Port 11434' }}</small>
+        </div>
+        <span class="chevron">⚙</span>
+      </div>
+      <div class="user-profile">
+        <div class="avatar">KD</div>
+        <div>
+          <b>Personal Workspace</b>
+          <small>Zero-Budget · Local SQLite</small>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Application Body -->
+  <main>
+    <header>
+      <div class="breadcrumbs">
+        Workspace <span>/</span> <b id="current-view-title">Overview</b>
+      </div>
+      <div class="header-right">
+        <span class="status-pill"><i class="dot-green"></i> SQLite Active</span>
+        <button class="primary small-btn" onclick="openModal('project-modal')">＋ Add Project</button>
+      </div>
+    </header>
+
+    <div class="content-container">
+
+      <!-- ================= 1. OVERVIEW VIEW ================= -->
+      <section id="view-overview" class="view-panel active">
+        <div class="welcome-banner">
+          <div>
+            <div class="eyebrow"><span class="pulse-dot"></span> PERSONAL MARKETING WORKSPACE</div>
+            <h1>Turn what you build into <em>what’s next.</em></h1>
+            <p>Convert your software projects into multi-channel campaigns across LinkedIn, Instagram, and Reddit without spam or guesswork.</p>
+          </div>
+          <div class="action-buttons">
+            <button class="secondary" onclick="navigate('generator')">Launch Campaign ↗</button>
+            <button class="primary" onclick="openModal('project-modal')">＋ Add Project</button>
+          </div>
+        </div>
+
+        <section class="metrics-grid">
+          <article class="metric-card">
+            <div class="metric-top">
+              <span>PROJECTS</span>
+              <span class="metric-icon lilac">▤</span>
+            </div>
+            <strong id="stat-projects">{{ projects|length }}</strong>
+            <small>Active software builds</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top">
+              <span>CAMPAIGNS</span>
+              <span class="metric-icon mint">✳</span>
+            </div>
+            <strong id="stat-campaigns">{{ campaigns|length }}</strong>
+            <small>Active or completed plans</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top">
+              <span>NEEDS REVIEW</span>
+              <span class="metric-icon amber">◷</span>
+            </div>
+            <strong id="stat-review">{{ counts.get('needs_review', 0) }}</strong>
+            <small>Drafts awaiting your approval</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top">
+              <span>APPROVED & READY</span>
+              <span class="metric-icon blue">✓</span>
+            </div>
+            <strong id="stat-approved">{{ counts.get('approved', 0) }}</strong>
+            <small>Approved platform assets</small>
+          </article>
+        </section>
+
+        <div class="dashboard-columns">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Your Projects</h2>
+                <p>Ground-truth repositories and descriptions.</p>
+              </div>
+              <button class="text-btn" onclick="navigate('projects')">View all →</button>
+            </div>
+            <div id="overview-project-list">
+              {% if projects %}
+                {% for p in projects[:3] %}
+                  <div class="list-item">
+                    <div class="project-avatar">{{ p.name[:2]|upper }}</div>
+                    <div class="item-details">
+                      <b>{{ p.name }}</b>
+                      <small>{{ p.description[:110] }}{% if p.description|length > 110 %}…{% endif %}</small>
+                      <div class="tag-row">
+                        {% if p.website_url %}<a href="{{ p.website_url }}" target="_blank" class="tag-pill">↗ Website</a>{% endif %}
+                        {% if p.repository_url %}<a href="{{ p.repository_url }}" target="_blank" class="tag-pill">⌘ Repository</a>{% endif %}
+                      </div>
+                    </div>
+                    <button class="action-btn" title="Create Campaign" onclick="selectProjectForCampaign({{ p.id }}, '{{ p.name|replace("'", "\\'") }}')">✳ Campaign</button>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty-state">
+                  <div class="empty-icon">▤</div>
+                  <b>No projects added yet</b>
+                  <span>Add your first project URL or description to begin creating campaigns.</span>
+                  <button class="primary small-btn" onclick="openModal('project-modal')">Add your first project</button>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Approval Queue Preview</h2>
+                <p>Content requiring your human sign-off.</p>
+              </div>
+              <button class="text-btn" onclick="navigate('approvals')">Review all ({{ counts.get('needs_review', 0) }}) →</button>
+            </div>
+            <div id="overview-pending-list">
+              {% set pending_assets = assets|selectattr('status', 'equalto', 'needs_review')|list %}
+              {% if pending_assets %}
+                {% for a in pending_assets[:3] %}
+                  <div class="list-item">
+                    <div class="platform-badge {{ a.platform|lower }}">
+                      {{ 'in' if a.platform == 'LinkedIn' else ('◎' if a.platform == 'Instagram' else '◉') }}
+                    </div>
+                    <div class="item-details">
+                      <span class="micro-tag">{{ a.platform|upper }} · {{ a.format }}</span>
+                      <b>{{ a.hook }}</b>
+                      <small>{{ a.project_name }}</small>
+                    </div>
+                    <button class="mini-btn" onclick="openEditModal({{ a.id }})">Review</button>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty-state">
+                  <div class="empty-icon">✓</div>
+                  <b>All caught up</b>
+                  <span>No drafts are currently waiting for your review.</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. PROJECTS VIEW ================= -->
+      <section id="view-projects" class="view-panel">
+        <div class="section-header">
+          <div>
+            <h2>Projects & Ground Truth</h2>
+            <p>Every campaign is built strictly from verified project information. No invented features or claims.</p>
+          </div>
+          <button class="primary" onclick="openModal('project-modal')">＋ Add New Project</button>
+        </div>
+
+        <div class="project-grid" id="projects-container">
+          {% if projects %}
+            {% for p in projects %}
+              <div class="project-card" id="project-card-{{ p.id }}">
+                <div class="project-card-header">
+                  <div class="project-icon-large">{{ p.name[:2]|upper }}</div>
+                  <div>
+                    <h3>{{ p.name }}</h3>
+                    <small class="text-muted">Added {{ p.created_at[:10] }}</small>
+                  </div>
+                  <div class="card-menu">
+                    <button class="secondary small-btn" onclick="openProjectBriefModal({{ p.id }})">Project Brief ↗</button>
+                  </div>
+                </div>
+                <p class="project-desc">{{ p.description }}</p>
+                <div class="project-links">
+                  {% if p.website_url %}
+                    <a href="{{ p.website_url }}" target="_blank" class="link-chip">↗ {{ p.website_url[:30] }}{% if p.website_url|length > 30 %}…{% endif %}</a>
+                  {% endif %}
+                  {% if p.repository_url %}
+                    <a href="{{ p.repository_url }}" target="_blank" class="link-chip">⌘ {{ p.repository_url[:30] }}{% if p.repository_url|length > 30 %}…{% endif %}</a>
+                  {% endif %}
+                </div>
+                <div class="project-card-actions">
+                  <button class="secondary small-btn" onclick="openUploadModal({{ p.id }}, '{{ p.name|replace("'", "\\'") }}')">📄 Upload README</button>
+                  {% if p.repository_url %}
+                    <button class="secondary small-btn" onclick="fetchGithubReadme({{ p.id }}, '{{ p.repository_url|replace("'", "\\'") }}')">⌘ Ingest GitHub</button>
+                  {% endif %}
+                  <button class="primary small-btn" onclick="selectProjectForCampaign({{ p.id }}, '{{ p.name|replace("'", "\\'") }}')">✳ Create Campaign</button>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-state large">
+              <div class="empty-icon">▤</div>
+              <h3>No projects added yet</h3>
+              <p>Add a project with a description or GitHub URL. We'll extract a verified project brief and generate multi-channel campaigns.</p>
+              <button class="primary" onclick="openModal('project-modal')">Add your first project</button>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- ================= 3. CAMPAIGN GENERATOR ================= -->
+      <section id="view-generator" class="view-panel">
+        <div class="section-header">
+          <div>
+            <h2>Campaign Generator</h2>
+            <p>Transform one software project into platform-tailored angles, hooks, scripts, and discussions.</p>
+          </div>
+        </div>
+
+        <div class="generator-wrapper">
+          <form id="campaign-gen-form" class="generator-form">
+            <div class="form-group">
+              <label>Select Project</label>
+              <select name="project_id" id="gen-project-select" required>
+                {% for p in projects %}
+                  <option value="{{ p.id }}">{{ p.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="two-columns">
+              <div class="form-group">
+                <label>Campaign Objective</label>
+                <select name="objective">
+                  <option value="Get thoughtful feedback">Get thoughtful feedback (Early Prototype)</option>
+                  <option value="Product Launch & User Acquisition">Product Launch & User Acquisition</option>
+                  <option value="Share technical lessons learned">Share technical lessons learned</option>
+                  <option value="Problem & Solution breakdown">Problem & Solution breakdown</option>
+                  <option value="Interactive Demo walkthrough">Interactive Demo walkthrough</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Campaign Duration</label>
+                <select name="duration_days">
+                  <option value="7">7 Days (3-4 focused assets)</option>
+                  <option value="14" selected>14 Days (5-6 multi-angle assets)</option>
+                  <option value="30">30 Days (Complete multi-week campaign)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Target Audience <small>(Customize who you want to reach)</small></label>
+              <input type="text" name="audience" placeholder="e.g. Students looking for campus gigs, indie builders, Python developers">
+            </div>
+
+            <div class="two-columns">
+              <div class="form-group">
+                <label>Tone of Voice</label>
+                <select name="tone">
+                  <option value="Personal and useful">Personal, transparent, and useful</option>
+                  <option value="Technical and direct">Technical and direct (Engineering-focused)</option>
+                  <option value="Warm and curious">Warm and curious (Feedback-oriented)</option>
+                  <option value="Energetic and visual">Energetic and visual (Creator/Reel style)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Custom Call to Action (CTA)</label>
+                <input type="text" name="cta" placeholder="e.g. What would you improve first? Try the live build at [link]">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Target Platforms</label>
+              <div class="checkbox-group">
+                <label class="check-box-label">
+                  <input type="checkbox" name="platforms" value="LinkedIn" checked>
+                  <span>LinkedIn (Founder stories, lessons)</span>
+                </label>
+                <label class="check-box-label">
+                  <input type="checkbox" name="platforms" value="Instagram" checked>
+                  <span>Instagram (Reels, Carousels)</span>
+                </label>
+                <label class="check-box-label">
+                  <input type="checkbox" name="platforms" value="Reddit" checked>
+                  <span>Reddit (Community feedback, discussions)</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-error" id="gen-error"></div>
+            <button type="submit" class="primary full-btn" id="generate-submit-btn">
+              ✳ Generate Campaign Drafts
+            </button>
+          </form>
+
+          <div class="generator-preview-sidebar">
+            <div class="info-card">
+              <span class="tag-purple">PLATFORM ADAPTATION</span>
+              <h3>Authentic angles, zero fake hype</h3>
+              <ul>
+                <li><b>LinkedIn:</b> Transparent founder building logs and architecture decisions.</li>
+                <li><b>Instagram:</b> Visual scene-by-scene Reel walkthroughs and carousels.</li>
+                <li><b>Reddit:</b> Humble feedback inquiries complying with community rules.</li>
+              </ul>
+              <div class="disclaimer-box">
+                <b>Strict Ground Truth:</b> All generated copy uses only the features and descriptions provided by you. No fabricated metrics or testimonials.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. CONTENT STUDIO ================= -->
+      <section id="view-studio" class="view-panel">
+        <div class="section-header">
+          <div>
+            <h2>Content Studio</h2>
+            <p>Review, edit, refine, and copy multi-channel campaign assets.</p>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">Platform:</span>
+            <button class="filter-btn active" data-filter-platform="all" onclick="filterStudio('platform', 'all', this)">All</button>
+            <button class="filter-btn" data-filter-platform="LinkedIn" onclick="filterStudio('platform', 'LinkedIn', this)">LinkedIn</button>
+            <button class="filter-btn" data-filter-platform="Instagram" onclick="filterStudio('platform', 'Instagram', this)">Instagram</button>
+            <button class="filter-btn" data-filter-platform="Reddit" onclick="filterStudio('platform', 'Reddit', this)">Reddit</button>
+          </div>
+
+          <div class="filter-group">
+            <span class="filter-label">Status:</span>
+            <button class="filter-btn active" data-filter-status="all" onclick="filterStudio('status', 'all', this)">All</button>
+            <button class="filter-btn" data-filter-status="needs_review" onclick="filterStudio('status', 'needs_review', this)">Needs Review</button>
+            <button class="filter-btn" data-filter-status="approved" onclick="filterStudio('status', 'approved', this)">Approved</button>
+            <button class="filter-btn" data-filter-status="published" onclick="filterStudio('status', 'published', this)">Published</button>
+          </div>
+        </div>
+
+        <div class="studio-grid" id="studio-assets-container">
+          {% if assets %}
+            {% for a in assets %}
+              <div class="asset-card" data-platform="{{ a.platform }}" data-status="{{ a.status }}" id="asset-card-{{ a.id }}">
+                <div class="asset-card-top">
+                  <div class="platform-badge {{ a.platform|lower }}">
+                    {{ 'in' if a.platform == 'LinkedIn' else ('◎' if a.platform == 'Instagram' else '◉') }}
+                  </div>
+                  <div>
+                    <span class="micro-tag">{{ a.platform|upper }} · {{ a.format }}</span>
+                    <small class="text-muted">{{ a.project_name }}</small>
+                  </div>
+                  <span class="status-badge {{ a.status }}">{{ a.status|replace('_', ' ') }}</span>
+                </div>
+
+                <h4 class="asset-hook">{{ a.hook }}</h4>
+                <div class="asset-body-preview">{{ a.body[:220] }}{% if a.body|length > 220 %}…{% endif %}</div>
+
+                <div class="asset-meta-box">
+                  <div><b>CTA:</b> {{ a.cta }}</div>
+                  <div><b>Visual brief:</b> {{ a.creative_brief }}</div>
+                  {% if a.verification_notes %}
+                    <div class="verification-note"><b>Verification:</b> {{ a.verification_notes }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="asset-footer-actions">
+                  <button class="secondary mini-btn" onclick="copyAssetContent({{ a.id }})">📋 Copy Text</button>
+                  <button class="secondary mini-btn" onclick="openRegenModal({{ a.id }})">⚡ Regenerate</button>
+                  <button class="secondary mini-btn" onclick="openHistoryModal({{ a.id }})">🕒 History</button>
+                  <button class="primary mini-btn" onclick="openEditModal({{ a.id }})">✎ Edit & Review</button>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-state large">
+              <div class="empty-icon">▧</div>
+              <h3>No content assets generated yet</h3>
+              <p>Create a campaign to generate platform-specific drafts ready for your review.</p>
+              <button class="primary" onclick="navigate('generator')">Create your first campaign</button>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- ================= 5. APPROVAL QUEUE ================= -->
+      <section id="view-approvals" class="view-panel">
+        <div class="section-header">
+          <div>
+            <h2>Approval Queue (Human in the Loop)</h2>
+            <p>Safety rule: No content is ever published automatically without your explicit review and sign-off.</p>
+          </div>
+        </div>
+
+        <div class="approval-container" id="approval-queue-container">
+          {% set pending = assets|selectattr('status', 'equalto', 'needs_review')|list %}
+          {% if pending %}
+            {% for a in pending %}
+              <div class="approval-card" id="approval-card-{{ a.id }}">
+                <div class="approval-card-header">
+                  <div class="platform-badge {{ a.platform|lower }}">
+                    {{ 'in' if a.platform == 'LinkedIn' else ('◎' if a.platform == 'Instagram' else '◉') }}
+                  </div>
+                  <div>
+                    <span class="micro-tag">{{ a.platform|upper }} · {{ a.format }}</span>
+                    <h3>{{ a.hook }}</h3>
+                    <small class="text-muted">{{ a.project_name }} · {{ a.campaign_name }}</small>
+                  </div>
+                  <span class="status-badge needs_review">needs review</span>
+                </div>
+
+                <div class="content-preview-box">
+                  <pre class="content-text">{{ a.body }}</pre>
+                </div>
+
+                <div class="brief-summary">
+                  <div class="brief-row"><b>Call to Action:</b> {{ a.cta }}</div>
+                  <div class="brief-row"><b>Visual Brief:</b> {{ a.creative_brief }}</div>
+                  <div class="brief-row"><b>Verification Note:</b> {{ a.verification_notes }}</div>
+                </div>
+
+                <div class="approval-action-bar">
+                  <button class="danger-btn" onclick="updateAssetStatus({{ a.id }}, 'rejected')">✕ Reject</button>
+                  <button class="secondary" onclick="openRegenModal({{ a.id }})">⚡ AI Regenerate</button>
+                  <button class="secondary" onclick="openEditModal({{ a.id }})">✎ Edit Copy</button>
+                  <button class="success-btn" onclick="updateAssetStatus({{ a.id }}, 'approved')">✓ Approve Post</button>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-state large">
+              <div class="empty-icon">✓</div>
+              <h3>Approval queue is clear!</h3>
+              <p>All drafts have been reviewed. Generate new campaigns or view your approved posts in Content Studio.</p>
+              <button class="primary" onclick="navigate('studio')">View Content Studio</button>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- ================= 6. CONTENT CALENDAR ================= -->
+      <section id="view-calendar" class="view-panel">
+        <div class="section-header">
+          <div>
+            <h2>Content Calendar & Schedule</h2>
+            <p>Chronological roadmap of your scheduled campaigns across platforms.</p>
+          </div>
+        </div>
+
+        <div class="calendar-wrapper">
+          <div class="schedule-timeline" id="calendar-timeline">
+            {% if assets %}
+              {% for a in assets|sort(attribute='scheduled_for') %}
+                <div class="timeline-row">
+                  <div class="timeline-date">
+                    <b>{{ a.scheduled_for[:10] if a.scheduled_for else 'Not set' }}</b>
+                    <small>{{ a.scheduled_for[11:16] if a.scheduled_for and a.scheduled_for|length > 11 else '10:00' }}</small>
+                  </div>
+                  <div class="timeline-dot {{ a.platform|lower }}"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-header">
+                      <span class="platform-chip {{ a.platform|lower }}">{{ a.platform }}</span>
+                      <span class="format-chip">{{ a.format }}</span>
+                      <span class="status-badge {{ a.status }}">{{ a.status|replace('_', ' ') }}</span>
+                    </div>
+                    <b>{{ a.hook }}</b>
+                    <p>{{ a.body[:140] }}…</p>
+                    <div class="timeline-actions">
+                      <button class="secondary mini-btn" onclick="openEditModal({{ a.id }})">✎ Reschedule / Edit</button>
+                      <button class="secondary mini-btn" onclick="copyAssetContent({{ a.id }})">📋 Copy</button>
+                      {% if a.status == 'approved' %}
+                        <button class="success-btn mini-btn" onclick="openMetricModal({{ a.id }})">📈 Log Metrics</button>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty-state large">
+                <div class="empty-icon">▦</div>
+                <h3>Calendar is currently empty</h3>
+                <p>Generate a campaign to establish your content publication calendar.</p>
+                <button class="primary" onclick="navigate('generator')">Create a campaign</button>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 7. DISTRIBUTION TRACKER ================= -->
+      <section id="view-distribution" class="view-panel">
+        <div class="section-header">
+          <div>
+            <h2>Distribution Tracker & Community Rules</h2>
+            <p>Manual sharing workflow for Reddit, developer forums, and communities. Protects your account from automated spam flags.</p>
+          </div>
+        </div>
+
+        <div class="distribution-guidelines">
+          <div class="guideline-card">
+            <h4>⚠️ Community Rules & Anti-Spam Protocol</h4>
+            <ul>
+              <li><b>Full Disclosure:</b> Always disclose that you built the tool or website. Never pretend to be a random user discovering it.</li>
+              <li><b>Zero Mass Posting:</b> Tailor the title and details to each specific subreddit. Do not copy-paste identical posts across 10 subreddits.</li>
+              <li><b>Respect Link Policies:</b> If a subreddit forbids self-promotion links in post titles or bodies, do not post links. Offer to share only if requested.</li>
+              <li><b>Engage in Comments:</b> Stick around to answer questions, acknowledge critiques, and thank people for their time.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Target Channels & Subreddits</h3>
+              <p>Track which communities you have reached and record live post links.</p>
+            </div>
+            <button class="secondary small-btn" onclick="openAddTargetModal()">＋ Add Target Channel</button>
+          </div>
+
+          <div class="targets-table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Platform</th>
+                  <th>Target / Community</th>
+                  <th>Rules & Guidelines</th>
+                  <th>Status</th>
+                  <th>Live Link / Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="distribution-targets-tbody">
+                {% if targets %}
+                  {% for t in targets %}
+                    <tr id="target-row-{{ t.id }}">
+                      <td><span class="platform-chip {{ t.platform|lower }}">{{ t.platform }}</span></td>
+                      <td><b>{{ t.target_name }}</b></td>
+                      <td><small class="text-muted">{{ t.rules_summary or 'Standard community rules' }}</small></td>
+                      <td>
+                        <span class="status-badge {{ 'approved' if t.status == 'shared' else 'needs_review' }}">
+                          {{ t.status }}
+                        </span>
+                      </td>
+                      <td>
+                        {% if t.live_url %}
+                          <a href="{{ t.live_url }}" target="_blank" class="live-link">↗ {{ t.live_url[:35] }}…</a>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if t.status != 'shared' %}
+                          <button class="primary mini-btn" onclick="openMarkSharedModal({{ t.id }}, '{{ t.target_name|replace("'", "\\'") }}')">Mark as Shared</button>
+                        {% else %}
+                          <span class="text-success">✓ Shared</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted" style="padding: 25px;">
+                      No distribution targets created yet. Create a campaign with Reddit selected to auto-populate targets.
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 8. ANALYTICS & REACH ================= -->
+      <section id="view-analytics" class="view-panel">
+        <div class="section-header">
+          <div>
+            <h2>Campaign Analytics & Learning</h2>
+            <p>Track real measured reach, link visits, and engagements. Generate evidence-based recommendations.</p>
+          </div>
+          <button class="primary small-btn" onclick="openMetricModal()">＋ Log Post Performance</button>
+        </div>
+
+        <div class="metrics-grid">
+          <article class="metric-card">
+            <div class="metric-top"><span>TOTAL IMPRESSIONS</span><span class="metric-icon lilac">👁</span></div>
+            <strong id="analytics-impressions">{{ analytics.totals.impressions or 0 }}</strong>
+            <small>Total views across platforms</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span>ENGAGEMENTS</span><span class="metric-icon mint">💬</span></div>
+            <strong id="analytics-engagements">{{ analytics.totals.engagements or 0 }}</strong>
+            <small>Comments, likes, and shares</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span>LINK CLICKS</span><span class="metric-icon blue">↗</span></div>
+            <strong id="analytics-clicks">{{ analytics.totals.clicks or 0 }}</strong>
+            <small>Direct visits to project</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span>AVG ENGAGEMENT RATE</span><span class="metric-icon amber">%</span></div>
+            <strong id="analytics-eng-rate">{{ analytics.totals.engagement_rate or '0.0' }}%</strong>
+            <small>Engagements / Impressions</small>
+          </article>
+        </div>
+
+        <div class="dashboard-columns">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Platform Performance Breakdown</h3>
+                <p>Comparison of engagement and click-through rates.</p>
+              </div>
+            </div>
+            <div class="platform-stats-list">
+              {% if analytics.by_platform %}
+                {% for plat, stats in analytics.by_platform.items() %}
+                  <div class="platform-stat-row">
+                    <span class="platform-chip {{ plat|lower }}">{{ plat }}</span>
+                    <div><b>{{ stats.impressions }}</b> <small>views</small></div>
+                    <div><b>{{ stats.engagements }}</b> <small>engagements</small></div>
+                    <div><b>{{ stats.clicks }}</b> <small>clicks</small></div>
+                    <div><span class="status-badge approved">{{ stats.engagement_rate }}% eng.</span></div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty-state compact">
+                  <span>Log your first post metrics to see platform comparison.</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>AI Evidence-Based Recommendations</h3>
+                <p>Actionable insights derived strictly from measured data.</p>
+              </div>
+            </div>
+            <div class="recommendations-container" id="recs-container">
+              {% if analytics.recommendations %}
+                {% for rec in analytics.recommendations %}
+                  <div class="recommendation-card">
+                    <h4>💡 {{ rec.title }}</h4>
+                    <p>{{ rec.summary }}</p>
+                    <div class="actionable-step"><b>Next Step:</b> {{ rec.actionable_step }}</div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty-state compact">
+                  <span>Record metrics to generate campaign recommendations.</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 9. SETTINGS & AI CONFIGURATION ================= -->
+      <section id="view-settings" class="view-panel">
+        <div class="section-header">
+          <div>
+            <h2>Settings & AI Provider</h2>
+            <p>Configure local AI providers, zero-budget execution modes, and workspace parameters.</p>
+          </div>
+        </div>
+
+        <div class="dashboard-columns">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>AI Provider Selection</h3>
+                <p>Switch between offline deterministic mock and local LLMs (Ollama).</p>
+              </div>
+            </div>
+
+            <form id="settings-form" class="settings-form">
+              <div class="form-group">
+                <label>Active Provider</label>
+                <select name="ai_provider" id="setting-ai-provider">
+                  <option value="mock" {{ 'selected' if settings.get('ai_provider') != 'local_llm' else '' }}>Deterministic Mock Provider (Offline · ₹0 · Zero APIs)</option>
+                  <option value="local_llm" {{ 'selected' if settings.get('ai_provider') == 'local_llm' else '' }}>Local LLM (Ollama / Local Server)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Ollama / Local Server URL</label>
+                <input type="url" name="ollama_url" id="setting-ollama-url" value="{{ settings.get('ollama_url', 'http://127.0.0.1:11434') }}">
+              </div>
+
+              <div class="form-group">
+                <label>Ollama Model Name</label>
+                <input type="text" name="ollama_model" id="setting-ollama-model" value="{{ settings.get('ollama_model', 'llama3') }}" placeholder="e.g. llama3, mistral, phi3, gemma2">
+              </div>
+
+              <div class="form-group">
+                <label>Default Tone</label>
+                <input type="text" name="default_tone" value="{{ settings.get('default_tone', 'Personal and useful') }}">
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="secondary" id="test-llm-btn" onclick="testLocalLLMConnection()">Test Connection</button>
+                <button type="submit" class="primary">Save Settings</button>
+              </div>
+              <div id="test-llm-result" class="test-result"></div>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>System Status & Audit Log</h3>
+                <p>Verifiable execution history and safety guarantees.</p>
+              </div>
+            </div>
+            <div class="system-status-box">
+              <div class="status-item">
+                <span>Database:</span> <b>SQLite (project_to_reach.sqlite3)</b>
+              </div>
+              <div class="status-item">
+                <span>SSRF Protection:</span> <b>Active (Private IP & Loopback Filter)</b>
+              </div>
+              <div class="status-item">
+                <span>Publishing Safety:</span> <b>Human Approval Required (No Auto-Posting)</b>
+              </div>
+            </div>
+
+            <h4 style="margin-top: 20px; font-size: 12px;">Recent Audit Events</h4>
+            <div class="audit-log-list" id="audit-log-container">
+              <div class="text-muted" style="font-size: 11px;">Loading audit logs…</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Add Project Modal -->
+  <div class="modal-backdrop" id="project-modal">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('project-modal')">×</button>
+      <span class="eyebrow"><span class="pulse-dot"></span> NEW PROJECT</span>
+      <h2>What are you building?</h2>
+      <p>Provide verified facts about your project. Our AI agent never invents features or results.</p>
+      <form id="project-form">
+        <label>Project Name
+          <input name="name" required maxlength="120" placeholder="e.g. StudEarn, Focusflow">
+        </label>
+        <label>What does it do? <small>(The problem and your solution)</small>
+          <textarea name="description" required maxlength="5000" rows="5" placeholder="Describe the core workflow, who it helps, and key features…"></textarea>
+        </label>
+        <div class="two-inputs">
+          <label>Website URL <small>optional</small>
+            <input name="website_url" type="url" placeholder="https://example.com">
+          </label>
+          <label>GitHub Repository URL <small>optional</small>
+            <input name="repository_url" type="url" placeholder="https://github.com/user/repo">
+          </label>
+        </div>
+        <div class="form-error" id="project-error"></div>
+        <button class="primary full-btn" type="submit">Save Project</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Project Brief Modal -->
+  <div class="modal-backdrop" id="brief-modal">
+    <div class="modal large-modal">
+      <button class="close-btn" onclick="closeModal('brief-modal')">×</button>
+      <span class="eyebrow"><span class="pulse-dot"></span> PROJECT BRIEF & GROUND TRUTH</span>
+      <h2 id="brief-project-name">Project Brief</h2>
+      <div id="brief-content" class="brief-body">
+        <div class="text-muted">Loading project brief…</div>
+      </div>
+      <div class="modal-footer-actions">
+        <button class="secondary" onclick="closeModal('brief-modal')">Close</button>
+        <button class="primary" id="reanalyze-brief-btn" onclick="reanalyzeBrief()">Re-analyze Brief ⚡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload README / Markdown Modal -->
+  <div class="modal-backdrop" id="upload-modal">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('upload-modal')">×</button>
+      <span class="eyebrow"><span class="pulse-dot"></span> SOURCE INGESTION</span>
+      <h2>Upload Project Documentation</h2>
+      <p>Attach README or design docs (.md, .txt) to extract verified features.</p>
+      <form id="upload-form">
+        <input type="hidden" name="project_id" id="upload-project-id">
+        <div class="form-group">
+          <label>File (.md, .markdown, .txt)
+            <input type="file" name="file" id="upload-file-input" accept=".md,.markdown,.txt,.rst" required>
+          </label>
+        </div>
+        <div class="form-error" id="upload-error"></div>
+        <button class="primary full-btn" type="submit">Upload & Ingest</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Content Asset Modal -->
+  <div class="modal-backdrop" id="edit-modal">
+    <div class="modal large-modal">
+      <button class="close-btn" onclick="closeModal('edit-modal')">×</button>
+      <span class="eyebrow"><span class="pulse-dot"></span> CONTENT STUDIO · <span id="edit-platform-title">EDIT</span></span>
+      <h2>Refine Content Copy</h2>
+      <form id="edit-form">
+        <input type="hidden" name="id" id="edit-asset-id">
+        <label>Hook / Title
+          <input name="hook" id="edit-hook" required maxlength="500">
+        </label>
+        <label>Content Body
+          <textarea name="body" id="edit-body" rows="9" required maxlength="10000"></textarea>
+        </label>
+        <div class="two-inputs">
+          <label>Call to Action (CTA)
+            <input name="cta" id="edit-cta" maxlength="300">
+          </label>
+          <label>Scheduled For (UTC)
+            <input name="scheduled_for" id="edit-scheduled-for" type="text" placeholder="YYYY-MM-DD HH:MM:SS">
+          </label>
+        </div>
+        <label>Creative / Visual Brief
+          <input name="creative_brief" id="edit-brief" maxlength="1000">
+        </label>
+        <div class="edit-meta-notice" id="edit-meta-notice">
+          Note: Editing approved copy automatically returns the asset to 'Needs Review' status.
+        </div>
+        <div class="form-error" id="edit-error"></div>
+        <div class="edit-action-bar">
+          <button type="button" class="danger-btn" id="edit-reject-btn" onclick="setAssetStatusFromEdit('rejected')">Reject</button>
+          <button type="button" class="success-btn" id="edit-approve-btn" onclick="setAssetStatusFromEdit('approved')">Approve Post</button>
+          <button type="submit" class="primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Regenerate Modal -->
+  <div class="modal-backdrop" id="regen-modal">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('regen-modal')">×</button>
+      <span class="eyebrow"><span class="pulse-dot"></span> AI REGENERATION</span>
+      <h2>Regenerate Draft with Feedback</h2>
+      <p>Give instructions on how you'd like this draft rewritten.</p>
+      <form id="regen-form">
+        <input type="hidden" name="id" id="regen-asset-id">
+        <label>Feedback / Direction
+          <textarea name="instruction" id="regen-instruction" rows="4" required placeholder="e.g. Make it more technical, highlight student peer requests, shorten the hook for mobile"></textarea>
+        </label>
+        <div class="form-error" id="regen-error"></div>
+        <button type="submit" class="primary full-btn" id="regen-submit-btn">⚡ Regenerate Draft</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Version History Modal -->
+  <div class="modal-backdrop" id="history-modal">
+    <div class="modal large-modal">
+      <button class="close-btn" onclick="closeModal('history-modal')">×</button>
+      <span class="eyebrow"><span class="pulse-dot"></span> REVISION HISTORY</span>
+      <h2>Content Version History</h2>
+      <div id="history-container" class="history-list">
+        <div class="text-muted">Loading version history…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Metrics Modal -->
+  <div class="modal-backdrop" id="metric-modal">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('metric-modal')">×</button>
+      <span class="eyebrow"><span class="pulse-dot"></span> RECORD PERFORMANCE</span>
+      <h2>Log Post Metrics</h2>
+      <form id="metric-form">
+        <div class="form-group">
+          <label>Select Post / Asset</label>
+          <select name="asset_id" id="metric-asset-select" required>
+            {% for a in assets %}
+              <option value="{{ a.id }}">{{ a.platform }}: {{ a.hook[:50] }}…</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="two-inputs">
+          <label>Impressions / Views
+            <input type="number" name="impressions" min="0" value="0">
+          </label>
+          <label>Reach (Unique Accounts)
+            <input type="number" name="reach" min="0" value="0">
+          </label>
+        </div>
+        <div class="two-inputs">
+          <label>Engagements (Likes, Comments)
+            <input type="number" name="engagements" min="0" value="0">
+          </label>
+          <label>Link Clicks
+            <input type="number" name="clicks" min="0" value="0">
+          </label>
+        </div>
+        <div class="two-inputs">
+          <label>Video Views (if Reel/video)
+            <input type="number" name="video_views" min="0" value="0">
+          </label>
+          <label>Conversions / Sign-ups
+            <input type="number" name="conversions" min="0" value="0">
+          </label>
+        </div>
+        <label>Qualitative Notes <small>(What feedback or comments did you get?)</small>
+          <input name="notes" placeholder="e.g. Great feedback on Reddit r/SideProject, 3 users requested dark mode">
+        </label>
+        <div class="form-error" id="metric-error"></div>
+        <button type="submit" class="primary full-btn">Save Performance Data</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mark Distribution Shared Modal -->
+  <div class="modal-backdrop" id="target-modal">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('target-modal')">×</button>
+      <span class="eyebrow"><span class="pulse-dot"></span> DISTRIBUTION RECORD</span>
+      <h2 id="target-modal-title">Record Shared Post</h2>
+      <form id="target-form">
+        <input type="hidden" name="target_id" id="target-id-input">
+        <label>Live URL of Shared Post
+          <input type="url" name="live_url" id="target-live-url" required placeholder="https://reddit.com/r/SideProject/comments/…">
+        </label>
+        <label>Notes & Community Response
+          <textarea name="notes" id="target-notes" rows="3" placeholder="e.g. Post received 15 upvotes and positive comments on peer service discovery."></textarea>
+        </label>
+        <button type="submit" class="primary full-btn">Save Shared Status</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- JavaScript Application Bundle -->
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
