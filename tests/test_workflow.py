@@ -219,5 +219,35 @@ StudEarn connects students on campus.
         )
         self.assertTrue(len(drafts) >= 2)
 
+    def test_groq_provider_and_settings(self):
+        from app.providers.groq_provider import GroqProvider
+        # Test GroqProvider with configured key
+        key = os.environ.get('GROQ_API_KEY')
+        if key:
+            provider = GroqProvider(api_key=key, model='openai/gpt-oss-120b')
+            connected, msg = provider.test_connection()
+            self.assertTrue(connected)
+
+            # Test API test endpoint
+            res_test = self.client.post('/api/v1/settings/test-groq', json={
+                'groq_api_key': key,
+                'groq_model': 'openai/gpt-oss-120b'
+            })
+            self.assertEqual(res_test.status_code, 200)
+            self.assertTrue(res_test.json['success'])
+
+        # Test invalid key handling
+        bad_provider = GroqProvider(api_key='gsk_invalid_test_key')
+        connected_bad, msg_bad = bad_provider.test_connection()
+        self.assertFalse(connected_bad)
+
+        # Test fallback generation
+        fallback_drafts = bad_provider.generate_campaign(
+            {'name': 'Fallback Test', 'description': 'Testing Groq fallback'},
+            {'platforms': ['LinkedIn', 'Reddit']}
+        )
+        self.assertTrue(len(fallback_drafts) >= 2)
+
 if __name__ == '__main__':
     unittest.main()
+
