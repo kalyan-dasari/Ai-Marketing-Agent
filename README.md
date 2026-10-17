@@ -7,6 +7,7 @@ A personal, offline-first, zero-budget marketing workspace for software engineer
 ## 🚀 Key Highlights & Philosophy
 
 - **Zero-Budget & Local-First (₹0):** Operates completely offline with a deterministic mock AI provider by default. Requires no paid API keys or external subscriptions.
+- **Groq Cloud AI Integration:** Built-in ultra-fast LPU inference supporting `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, and `qwen/qwen3.8-27b` via free Groq API keys, with automatic fallback to the deterministic mock provider on network or rate limit issues.
 - **Strict Ground Truth:** Never invents features, user numbers, testimonials, or performance metrics. All campaign copy is strictly derived from verified project details.
 - **Human-in-the-Loop:** Safety-first architecture. Content cannot be published or queued without explicit human review and approval. Editing an approved draft automatically returns it to review.
 - **SSRF & Upload Protection:** External URL ingestion and GitHub README fetching are protected against Server-Side Request Forgery (SSRF) by blocking loopback and private subnets.
@@ -20,11 +21,12 @@ A personal, offline-first, zero-budget marketing workspace for software engineer
 project-to-reach/
 ├── app/
 │   ├── __init__.py           # Flask app factory, config, and blueprint registration
-│   ├── config.py             # Application settings & database path
+│   ├── config.py             # Application settings, .env loader, database path
 │   ├── db.py                 # SQLite schema, indices, and auto-migrations
 │   ├── models/               # Typed data structures (ProjectBrief, GeneratedAsset)
 │   ├── providers/            # Modular AI provider architecture
 │   │   ├── base.py           # Abstract BaseAIProvider interface
+│   │   ├── groq_provider.py  # Groq Cloud LPU provider (Fast, free API tier)
 │   │   ├── mock.py           # Deterministic offline multi-angle provider
 │   │   ├── local_llm.py      # Local Ollama / OpenAI-compatible endpoint provider
 │   │   └── factory.py        # Provider factory reading workspace settings
